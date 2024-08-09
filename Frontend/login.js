@@ -11,8 +11,15 @@ async function handleLogin(e){
  axios.post("http://localhost:5000/login",user)
  .then(r=>{
 console.log(r.data);
+sessionStorage.setItem('token',r.data.token);
 
  })
- .catch(e=>console.log(e)
+ .catch(e=>{
+
+   console.log(e.response.data.message);
+   
+   const div=document.getElementById('mydiv');
+   div.innerHTML=`<p>${e.response.data.message}</p>`
+ }
  )
 }
