@@ -18,8 +18,8 @@ const user=
     name:name
        };
 
-       const r=await User.create(user,{transaction:t});
-       console.log(r);
+        await User.create(user,{transaction:t});
+       
        
      await  t.commit();
 
@@ -35,4 +35,10 @@ const user=
     }
     
 
+}
+
+module.exports.login=async(req)=>{
+
+    console.log(req.body);
+    
 }
