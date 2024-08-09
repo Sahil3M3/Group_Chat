@@ -18,13 +18,17 @@ const user=
     name:name
        };
 
-       await User.create(user,{transaction:t});
+       const r=await User.create(user,{transaction:t});
+       console.log(r);
+       
      await  t.commit();
 
        return {status:201,message:"User is Added"};
     }
     catch(e)
     {
+        console.log(e);
+        
         await t.rollback();
      
         return { status: 409, error: e.message };

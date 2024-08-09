@@ -4,7 +4,7 @@ const cors=require('cors')
 const app = express();
 const sequelize=require('./util/database.js')
 const userRoutes=require('./routes/user')
-app.use(cors());
+app.use(cors({origin:"*",credentials:true    }));
 app.use(express.json())
 app.use('/', userRoutes);
 
