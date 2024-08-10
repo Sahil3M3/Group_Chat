@@ -1,44 +1,35 @@
 
+    displayMessages = (messages) => {
+        const chatContainer = document.getElementById('chat-container');
+        chatContainer.innerHTML = '';
+        messages.forEach(messageObj => {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${messageObj.userId} - ${messageObj.message}`;  // Display the message text
+            chatContainer.appendChild(messageElement);
+        });
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
-
- displayMessages=(messages)=> {
-     const chatContainer = document.getElementById('chat-container');
-    chatContainer.innerHTML = '';
-    messages.forEach(message => {
-        const messageElement = document.createElement('div');
-        messageElement.textContent = message;
-        chatContainer.appendChild(messageElement);
+    document.addEventListener("DOMContentLoaded", function() {
+        fetchMessage()
     });
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
-// Placeholder data
-const messages = [
-    "You joined",
-    "Vaibhav joined",
-    "Vaibhav: hello",
-    "You: hi There",
-    "Vaibhav: What is up?",
-    "Vaibhav: All good"
-];
-document.addEventListener("DOMContentLoaded", function() {
-    const token = sessionStorage.getItem('token');
-
-axios.get('http://localhost:5000/chat',{headers:{"Authorization":token}})
-.then(r=>{
-    console.log(r.data);
     
-})
-.catch(e=>{
-    console.log(e);
+    async function fetchMessage() {
+        
+        const token = sessionStorage.getItem('token');
     
-})
+        axios.get('http://localhost:5000/chat', { headers: { "Authorization": token } })
+            .then(response => {
+                console.log(response.data);
+                const messages = response.data.message;  // Assuming the response structure you provided
+                displayMessages(messages);  // Pass the fetched messages to displayMessages
+            })
+            .catch(error => {
+                console.log(error);
+            });
+        
+    }
 
-
-   // displayMessages();
-
-   
-});
 
 async function handleSend(e) {
     e.preventDefault();
@@ -55,8 +46,8 @@ console.log(message);
         axios.post('http://localhost:5000/chat',messageobj,{headers:{"Authorization":token}})
         .then(r=>{
             console.log(r.data);
-            displayMessages();
             messageInput.value = '';
+            displayMessages();
         })
         .catch(e=>{
             console.log(e.response);
@@ -66,3 +57,4 @@ console.log(message);
 
 
 
+setInterval(fetchMessage,1000);
