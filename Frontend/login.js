@@ -12,7 +12,7 @@ async function handleLogin(e){
  .then(r=>{
 console.log(r.data);
 sessionStorage.setItem('token',r.data.token);
-
+window.location.href="http://localhost:5500/Frontend/chat.html"
  })
  .catch(e=>{
 
