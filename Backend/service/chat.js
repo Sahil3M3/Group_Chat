@@ -1,5 +1,6 @@
 const Message=require('../model/message')
 const sequelize=require('../util/database')
+const { Op } = require('sequelize');
 
 module.exports.createMessage=async(req)=>{
     const userId=req.user.id;
@@ -15,7 +16,9 @@ try{
     },{transaction:t})
 
     await t.commit()
-    return {status:201,message:"Message is Added"};
+    return {status:201,message:{
+        id:userId,message:message
+    }};
 }
 
 catch(e)
@@ -29,24 +32,25 @@ catch(e)
 }
 }
 
-module.exports.getMessage=async (req) => {
-    console.log("in get mesg");
-try{
+module.exports.getMessage = async (req) => {
+    const afterId = req.query.afterId ? parseInt(req.query.afterId) : 0;
 
-    const message=await Message.findAll();
-    const messageData = message.map(msg => msg.dataValues);
+    const queryOptions = {
+        attributes: ['id', 'message'], 
+        order: [['id', 'DESC']],      
+        limit: 10                      
+    };
 
-const response = {
-  message:messageData
+    if (afterId) {
+        queryOptions.where = { id: { [Op.gt]: afterId } };
+    }
+
+    try {
+        const messages = await Message.findAll(queryOptions);
+        const messageData = messages.reverse(); 
+        return { message: messageData };
+    } catch (error) {
+        console.error("Error fetching messages:", error);
+        throw new Error("Error fetching messages");
+    }
 };
-
-return response;
-}
-catch(e)
-{
-    console.error("Error fetching Message:", error);
-    throw new Error("Error fetching Message");
-}
-    
-    
-}
