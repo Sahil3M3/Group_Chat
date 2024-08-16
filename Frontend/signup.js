@@ -17,8 +17,7 @@ console.log(user);
 axios.post('http://localhost:5000/signup',user)
 .then(r=>{
     console.log(r.data);
-    alert(r.data.message)
-    
+    window.location.href='http://localhost:5500/Frontend/login.html'    
 }).catch(e=>console.log(e.response))
 alert("User already Exist")
 
