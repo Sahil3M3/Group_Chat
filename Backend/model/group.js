@@ -12,8 +12,12 @@ const Group=sequelize.define('group',{
     },
     name:{
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true
+    },
+    creatorId:{
+        type: Sequelize.STRING,
+        allowNull: false,
     }
 
 });

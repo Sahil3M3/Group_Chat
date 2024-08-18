@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     loadGroups();
 });
@@ -9,12 +8,10 @@ function loadGroups() {
     axios.get('http://localhost:5000/groups', { headers: { "Authorization": token } })
         .then(response => {
             const groups = response.data.groups;
-            console.log(groups);
-            
             displayGroups(groups);
         })
         .catch(error => {
-            console.log(error);
+            console.error(error);
         });
 }
 
@@ -31,6 +28,7 @@ function displayGroups(groups) {
         groupElement.addEventListener('click', () => {
             loadGroupMessages(group.id);
             highlightActiveGroup(groupElement);
+            showGroupManagement(group.id);
         });
         groupList.appendChild(groupElement);
     });
@@ -50,31 +48,28 @@ function handleSend(event) {
     const message = messageInput.value.trim();
     const token = sessionStorage.getItem('token');
     const currentGroupId = document.querySelector('.group.active')?.dataset.groupId;
+console.log("handlesend");
 
     if (message && currentGroupId) {
         axios.post(`http://localhost:5000/groups/${currentGroupId}/messages`, { message: message }, { headers: { "Authorization": token } })
             .then(response => {
                 const sentMessage = response.data.message;
                 const storedMessages = getMessagesFromLocalStorage(currentGroupId);
-
-                // Update stored messages and local storage
                 const updatedMessages = [...storedMessages, sentMessage].slice(-10);
                 storeMessagesInLocalStorage(currentGroupId, updatedMessages);
                 displayMessages(updatedMessages);
-
                 messageInput.value = ''; // Clear the input field
             })
             .catch(error => {
-                console.log(error);
+                console.error(error);
             });
     }
 }
- 
+
 // Function to display messages in the chat window
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
     messagesContainer.innerHTML = ''; // Clear previous messages
-console.log(messages);
 
     messages.forEach(msg => {
         const messageElement = document.createElement('div');
@@ -85,35 +80,8 @@ console.log(messages);
 
     messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
 }
-// Store messages in local storage
-function storeMessagesInLocalStorage(groupId, messages) {
-    const maxMessages = 10;
-    const storedMessages = messages.slice(-maxMessages); // Store only the last 10 messages
-    localStorage.setItem(`chatMessages_${groupId}`, JSON.stringify(storedMessages));
-}
 
-// Retrieve messages from local storage
-function getMessagesFromLocalStorage(groupId) {
-    return JSON.parse(localStorage.getItem(`chatMessages_${groupId}`)) || [];
-}
-function loadGroupMessages(groupId) {
-    const storedMessages = getMessagesFromLocalStorage(groupId);
-    if (storedMessages.length > 0) {
-        displayMessages(storedMessages);
-    } else {
-        const token = sessionStorage.getItem('token');
-        axios.get(`http://localhost:5000/groups/${groupId}/messages`, { headers: { "Authorization": token }, params: { limit: 10 } })
-            .then(response => {
-                const messages = response.data.messages;
-                storeMessagesInLocalStorage(groupId, messages);
-                displayMessages(messages);
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-}
-
+// Function to create a new group
 function createGroup() {
     const groupName = prompt("Enter group name:");
     if (groupName) {
@@ -128,29 +96,24 @@ function createGroup() {
                 document.getElementById('group-list').appendChild(newGroup);
             })
             .catch(error => {
-                console.log(error);
+                console.error(error);
             });
     }
 }
 
-
-// Function to join a group
+// Function to join a group by name
 function joinGroup() {
     const groupName = document.getElementById('join-group-name').value.trim();
     const token = sessionStorage.getItem('token');
-console.log("send");
 
     if (groupName) {
         axios.post(`http://localhost:5000/groups/join`, { groupName }, { headers: { "Authorization": token } })
             .then(response => {
-                
-                alert(response.data.message);       
-
-                // Optionally, refresh the group list to show the newly joined group
-                loadGroups();
+                alert(response.data.message);
+                loadGroups(); // Refresh the group list
             })
             .catch(error => {
-                console.log(error);
+                console.error(error);
                 alert(error.response.data.error);
             });
     } else {
@@ -158,12 +121,110 @@ console.log("send");
     }
 }
 
+// Function to show the group management section
+function showGroupManagement(groupId) {
+    const groupManagement = document.getElementById('group-management');
+    groupManagement.style.display = 'block';
+    groupManagement.dataset.groupId = groupId;
+}
 
+// Function to add a member to the group
+function addMember() {
+    const groupId = document.getElementById('group-management').dataset.groupId;
+    const memberInfo = prompt("Enter member's email :");
+    const token = sessionStorage.getItem('token');
 
-//Fetch new messages every 3 seconds
+    if (memberInfo) {
+        axios.post(`http://localhost:5000/groups/${groupId}/members`, { memberInfo }, { headers: { "Authorization": token } })
+            .then(response => {
+                alert("Member added successfully!");
+                // Optionally refresh the group member list
+            })
+            .catch(error => {
+                console.error(error);
+                alert(error.response.data.error);
+            });
+    }
+}
+
+// Function to promote a member to admin
+function promoteToAdmin() {
+    const groupId = document.getElementById('group-management').dataset.groupId;
+    const email = prompt("Enter the user email to promote:");
+    const token = sessionStorage.getItem('token');
+
+    if (email) {
+        axios.patch(`http://localhost:5000/groups/${groupId}/admins`, { email:email, isAdmin: true }, { headers: { "Authorization": token } })
+            .then(response => {
+                alert("User promoted to admin successfully!");
+                // Optionally refresh the group member list
+            })
+            .catch(error => {
+                console.error(error);
+                alert(error.response.data.error);
+            });
+    }
+}
+
+// Function to remove a member from the group
+function removeMember() {
+    const groupId = document.getElementById('group-management').dataset.groupId;
+    const email = prompt("Enter the user email to remove:");
+    const token = sessionStorage.getItem('token');
+
+    if (email) {
+        axios.delete(`http://localhost:5000/groups/${groupId}/members/${email}`, { headers: { "Authorization": token } })
+            .then(response => {
+                alert("User removed from group successfully!");
+                // Optionally refresh the group member list
+            })
+            .catch(error => {
+                console.error(error);
+                alert(error.response.data.error);
+            });
+    }
+}
+
+// Fetch new messages every 3 seconds
 setInterval(() => {
     const currentGroupId = document.querySelector('.group.active')?.dataset.groupId;
+    
+    
     if (currentGroupId) {
         loadGroupMessages(currentGroupId);
     }
 }, 3000);
+
+// Function to store messages in local storage
+function storeMessagesInLocalStorage(groupId, messages) {
+    const maxMessages = 10;
+    const storedMessages = messages.slice(-maxMessages); // Store only the last 10 messages
+    localStorage.setItem(`chatMessages_${groupId}`, JSON.stringify(storedMessages));
+}
+
+// Function to retrieve messages from local storage
+function getMessagesFromLocalStorage(groupId) {
+    return JSON.parse(localStorage.getItem(`chatMessages_${groupId}`)) || [];
+}
+
+// Function to load group messages
+function loadGroupMessages(groupId) {
+    
+    const storedMessages = getMessagesFromLocalStorage(groupId);
+   
+        console.log("gett new msg");
+        
+        const token = sessionStorage.getItem('token');
+        axios.get(`http://localhost:5000/groups/${groupId}/messages`, { headers: { "Authorization": token }, params: { limit: 10 } })
+            .then(response => {
+                const messages = response.data.messages;
+                console.log(messages);
+                
+                storeMessagesInLocalStorage(groupId, messages);
+                displayMessages(messages);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    
+}

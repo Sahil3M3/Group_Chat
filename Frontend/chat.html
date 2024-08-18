@@ -5,98 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gapshap</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            display: flex;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-        #sidebar {
-            width: 250px;
-            background-color: #343a40;
-            color: white;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        #sidebar .group {
-            cursor: pointer;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            background-color: #495057;
-        }
-        #sidebar .group:hover {
-            background-color: #6c757d;
-        }
-        #sidebar .create-group {
-            margin-top: auto;
-            text-align: center;
-        }
-        #chat-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: hidden;
-        }
-        #messages-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-        .message {
-            background-color: #d3d3d3;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            max-width: 60%;
-        }
-        #message-input-container {
-            background-color: #1c4b6b;
-            padding: 10px;
-            display: flex;
-        }
-        #message-input-container input {
-            flex-grow: 1;
-            margin-right: 10px;
-            border-radius: 5px;
-            padding: 10px;
-            border: 1px solid #ccc;
-        }
-        #message-input-container button {
-            border-radius: 5px;
-        }
-    </style>
 </head>
-<body>
-    <div id="sidebar">
-        <h2> Gapshap Groups</h2>
-        <div class="join-group">
-            <input type="text" id="join-group-name" placeholder="Enter group name to join">
-            <button class="btn btn-primary" onclick="joinGroup()">Join Group</button>
+<body class="d-flex vh-100">
+
+    <div id="sidebar" class="bg-light p-3 border-end">
+        <h2 class="h5">Gapshap Groups</h2>
+        <div class="join-group mb-3">
+            <input type="text" id="join-group-name" class="form-control mb-2" placeholder="Enter group name to join">
+            <button class="btn btn-primary w-100" onclick="joinGroup()">Join Group</button>
         </div>
     
-
-        <div id="group-list" class="list-group">
-           
-        </div>
+        <div id="group-list" class="list-group mb-3"></div>
+        
         <div class="create-group">
-            <button class="btn btn-primary" onclick="createGroup()">Create Group</button>
+            <button class="btn btn-primary w-100" onclick="createGroup()">Create Group</button>
         </div>
     </div>
-
-    <div id="chat-container">
-        <div id="messages-container">
-            
-        </div>
-        <form id="message-input-container" onsubmit="handleSend(event)">
-            <input type="text" id="message" placeholder="Type your message here...">
+    
+    <div id="chat-container" class="flex-grow-1 d-flex flex-column">
+        <div id="messages-container" class="flex-grow-1 p-3 overflow-auto"></div>
+        <form id="message-input-container" class="d-flex p-3 border-top" onsubmit="handleSend(event)">
+            <input type="text" id="message" class="form-control me-2" placeholder="Type your message here...">
             <button type="submit" class="btn btn-primary">Send</button>
         </form>
     </div>
-
+    
+    <!-- New Section for Group Management -->
+    <div id="group-management" class="p-3 bg-light border-start" style="display: none;">
+        <h3 class="h6">Manage Group</h3>
+        <button class="btn btn-secondary w-100 mb-2" onclick="addMember()">Add Member</button>
+        <button class="btn btn-secondary w-100 mb-2" onclick="promoteToAdmin()">Promote to Admin</button>
+        <button class="btn btn-danger w-100" onclick="removeMember()">Remove Member</button>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="chat.js"></script>
 </body>
