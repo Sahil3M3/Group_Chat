@@ -31,13 +31,13 @@ function displayGroups(groups) {
             loadGroupMessages(group.id);
             highlightActiveGroup(groupElement);
             showGroupManagement(group.id);
-            joinGroupForSocket(socket,group.id)
+            joinGroupForSocket(group.id)
         });
         groupList.appendChild(groupElement);
     });
 }
 
-function joinGroupForSocket(socket,groupId)
+function joinGroupForSocket(groupId)
 {
 console.log(socket.id,groupId);
 socket.emit('joinGroup', groupId);

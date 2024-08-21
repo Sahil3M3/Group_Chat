@@ -11,7 +11,8 @@ const app = express();
 const sequelize=require('./util/database.js')
 const userRoutes=require('./routes/user')
 
-const groupRoutes=require('./routes/group')
+const groupRoutes=require('./routes/group');
+const { log } = require('console');
 app.use(cors({origin:"*",credentials:true    }));
 app.use(express.json())
 const server = createServer(app);
@@ -45,13 +46,15 @@ io.on('connection', (socket) => {
     console.log(`User ${socket.id} connected`);
 
     socket.on('joinGroup', (groupId) => {
+        
         socket.join(groupId);
     });
 
     socket.on('send', (groupId) => {
       
+        groupId=Number(groupId);
         
-        io.emit('rec', groupId);
+        socket.to(groupId).emit('rec',groupId);
 
     });
 
