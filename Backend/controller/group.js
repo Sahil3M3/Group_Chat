@@ -11,8 +11,7 @@ module.exports.JoinGroup = async (req, res) => {
 };
 
 module.exports.getGroup = async (req, res) => {
-    const result = await groupService.getGroups(req);
-    console.log(result);    
+    const result = await groupService.getGroups(req);  
     return res.status(200).json(result);
 };
 

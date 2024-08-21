@@ -1,3 +1,5 @@
+const socket=io('http://localhost:5000')
+
 document.addEventListener('DOMContentLoaded', () => {
     loadGroups();
 });
@@ -29,10 +31,20 @@ function displayGroups(groups) {
             loadGroupMessages(group.id);
             highlightActiveGroup(groupElement);
             showGroupManagement(group.id);
+            joinGroupForSocket(socket,group.id)
         });
         groupList.appendChild(groupElement);
     });
 }
+
+function joinGroupForSocket(socket,groupId)
+{
+console.log(socket.id,groupId);
+socket.emit('joinGroup', groupId);
+console.log("emit join group");
+
+}
+
 
 // Function to highlight the active group
 function highlightActiveGroup(groupElement) {
@@ -41,6 +53,14 @@ function highlightActiveGroup(groupElement) {
     groupElement.classList.add('active');
 }
 
+socket.on('rec', (groupId) => {
+    
+    // Fetch and display messages here...
+    loadGroupMessages(groupId);
+  
+});
+
+
 // Function to handle sending a message
 function handleSend(event) {
     event.preventDefault();
@@ -48,17 +68,18 @@ function handleSend(event) {
     const message = messageInput.value.trim();
     const token = sessionStorage.getItem('token');
     const currentGroupId = document.querySelector('.group.active')?.dataset.groupId;
-console.log("handlesend");
 
+    
     if (message && currentGroupId) {
         axios.post(`http://localhost:5000/groups/${currentGroupId}/messages`, { message: message }, { headers: { "Authorization": token } })
-            .then(response => {
-                const sentMessage = response.data.message;
-                const storedMessages = getMessagesFromLocalStorage(currentGroupId);
-                const updatedMessages = [...storedMessages, sentMessage].slice(-10);
-                storeMessagesInLocalStorage(currentGroupId, updatedMessages);
-                displayMessages(updatedMessages);
-                messageInput.value = ''; // Clear the input field
+        .then(response => {
+            const sentMessage = response.data.message;
+            const storedMessages = getMessagesFromLocalStorage(currentGroupId);
+            const updatedMessages = [...storedMessages, sentMessage].slice(-10);
+            storeMessagesInLocalStorage(currentGroupId, updatedMessages);
+            displayMessages(updatedMessages);
+            messageInput.value = ''; // Clear the input field
+            socket.emit('send',currentGroupId);
             })
             .catch(error => {
                 console.error(error);
@@ -185,16 +206,6 @@ function removeMember() {
     }
 }
 
-// Fetch new messages every 3 seconds
-setInterval(() => {
-    const currentGroupId = document.querySelector('.group.active')?.dataset.groupId;
-    
-    
-    if (currentGroupId) {
-        loadGroupMessages(currentGroupId);
-    }
-}, 3000);
-
 // Function to store messages in local storage
 function storeMessagesInLocalStorage(groupId, messages) {
     const maxMessages = 10;
@@ -219,7 +230,7 @@ function loadGroupMessages(groupId) {
             .then(response => {
                 const messages = response.data.messages;
                 console.log(messages);
-                
+                messages.reverse();
                 storeMessagesInLocalStorage(groupId, messages);
                 displayMessages(messages);
             })

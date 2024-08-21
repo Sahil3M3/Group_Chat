@@ -1,6 +1,7 @@
 const express = require('express');
 const cors=require('cors')
-
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 
 const User=require('./model/user');
 const Message=require('./model/message.js')
@@ -13,6 +14,13 @@ const userRoutes=require('./routes/user')
 const groupRoutes=require('./routes/group')
 app.use(cors({origin:"*",credentials:true    }));
 app.use(express.json())
+const server = createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        credentials: true
+    }
+});
 
 //routes
 app.use('/', userRoutes);
@@ -33,9 +41,26 @@ User.hasMany(GroupMembership,{foreignKey:"userId", onDelete: 'CASCADE'});
 GroupMembership.belongsTo(User,{foreignKey:"userId"});
 
 
+io.on('connection', (socket) => {
+    console.log(`User ${socket.id} connected`);
 
-sequelize.sync({}).then(r=>{    
-    app.listen(5000, () => {
+    socket.on('joinGroup', (groupId) => {
+        socket.join(groupId);
+    });
+
+    socket.on('send', (groupId) => {
+      
+        
+        io.emit('rec', groupId);
+
+    });
+
+ 
+});
+
+
+sequelize.sync().then(r=>{    
+    server.listen(5000, () => {
         console.log('Server is running on port 5000');
     });
 

@@ -53,7 +53,7 @@ module.exports.getMessage = async (req) => {
     
     const queryOptions = {
         where: { groupId },
-        order: [['id', 'ASC']],
+        order: [['id', 'DESC']],
         limit: 10
     };
 
