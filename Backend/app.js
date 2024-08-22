@@ -2,6 +2,7 @@ const express = require('express');
 const cors=require('cors')
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const scheduleCronJobs = require('./util/cronJobs.js');
 
 const User=require('./model/user');
 const Message=require('./model/message.js')
@@ -10,7 +11,7 @@ const Group=require('./model/group.js')
 const app = express();
 const sequelize=require('./util/database.js')
 const userRoutes=require('./routes/user')
-
+const ArchivedChat=require('./model/ArchivedChat')
 const groupRoutes=require('./routes/group');
 const { log } = require('console');
 app.use(cors({origin:"*",credentials:true    }));
@@ -23,6 +24,7 @@ const io = new Server(server, {
     }
 });
 
+scheduleCronJobs();
 //routes
 app.use('/', userRoutes);
 
@@ -40,6 +42,12 @@ Message.belongsTo(Group,{foreignKey:"groupId"});
 
 User.hasMany(GroupMembership,{foreignKey:"userId", onDelete: 'CASCADE'});
 GroupMembership.belongsTo(User,{foreignKey:"userId"});
+
+User.hasMany(ArchivedChat,{foreignKey:"userId",onDelete:"CASCADE"});
+ArchivedChat.belongsTo(User,{foreignKey:"userId"});
+
+Group.hasMany(ArchivedChat,{foreignKey:"groupId",onDelete:"CASCADE"});
+ArchivedChat.belongsTo(Group,{foreignKey:"groupId"});
 
 
 io.on('connection', (socket) => {
